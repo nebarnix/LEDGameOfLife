@@ -129,14 +129,14 @@ void timerCallback()
     timerState = TOP;
     writeFrameBuffer(BOT);
     //SHOW BOTTOM HALF
-    PORTB |= TOPP_EN;  PORTB &= ~BOTP_EN;
+    PORTB |= BOTP_EN;  PORTB &= ~TOPP_EN;
     }
   else
     {
     timerState = BOT;
     writeFrameBuffer(TOP);
     //SHOW TOP HALF
-    PORTB |= BOTP_EN;  PORTB &= ~TOPP_EN;
+    PORTB |= TOPP_EN;  PORTB &= ~BOTP_EN;
     } 
 }
 
@@ -290,18 +290,19 @@ void clearPixel(int x, int y)
 //  }
 }
 
+//enable checks to allow invalid pixels to be chosen (this lets us work to the edge of the board)
 bool getPixel(int x, int y)
 {
-//if(x < Width && y < Height)
-//   {
+if(x < Width && y < Height)
+   {
    if( y > 6) //top bit isn't output (7 rows each half), we have to shift up
       y++; 
    if( (fbuffer[x] & (1<<y)) > 0) 
      return true;
    else 
      return false;
-//   }
-//return false;
+   }
+return false;
 }
 
 void putPixel(int x, int y)
@@ -362,9 +363,9 @@ void AdvanceGameOfLife()
 char board[Width][Height];
   char total = 0;
   //int cellValue;
-  for(int x = 1; x < Width-1; x++)
+  for(int x = 0; x < Width; x++)
     {
-    for(int y = 1; y < Height-1; y++)
+    for(int y = 0; y < Height; y++)
       {
       total = 0;
       //cellValue = (fbuffer[x] & (1<<y)) >> y; current cell state is not actually used!
@@ -422,23 +423,23 @@ char board[Width][Height];
 
       //HIGHLIFE  
       #ifdef HIGHLIFE
-      if(total == 2); //do nothing
-         //board[x][y] = getPixel(x,y);
+      if(total == 2) //do nothing
+         board[x][y] = getPixel(x,y);
       else if(total == 6 || total == 3) //live!
-        putPixel(x,y);
-        //board[x][y] = 1;        
+        //putPixel(x,y);
+        board[x][y] = 1;        
       else  //died to death
-        clearPixel(x,y);
-        //board[x][y] = 0;
+        //clearPixel(x,y);
+        board[x][y] = 0;
       
       #endif
       }
     }
   //Output Board  
   
-  for(int x = 1; x < Width-1; x++)
+  for(int x = 0; x < Width; x++)
     {
-    for(int y = 1; y < Height-1; y++)
+    for(int y = 0; y < Height; y++)
       {
       if(board[x][y] == 1)
          putPixel(x,y);
