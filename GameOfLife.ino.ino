@@ -53,9 +53,12 @@
 #define CLK_US 0
 // the setup function runs once when you press reset or power the board
 
-int VisDuration = 1000; //this controls the overall brightness, don't go above 7500 or it gets flickery
-const int Height = 14; //top bit of each byte half is not shown!
-const int Width = 36;
+#define VisDuration 1000 //this controls the overall brightness, don't go above 7500 or it gets flickery
+//const int Height = 14; //top bit of each byte half is not shown!
+#define Height 14
+#define Width 36
+//const int Width = 15;
+//const int Width = 64;
 unsigned int fbuffer[Width]; //LEDs -- high byte is bottom low byte is top. bit0 is the very top.
 unsigned long time1=0;
 unsigned long time2=0;
@@ -83,6 +86,7 @@ void setup() {
   putPixel(13,13);    
   putPixel(14,14);    
   */
+
   
   for(int x=1; x < Width-1; x++)
   {
@@ -161,7 +165,7 @@ void loop() {
   //feed the cells every second
   //HIGHLIFE every 30 seconds
   #ifndef HIGHLIFE
-  if(micros() - time2 > 2000000)
+  if(micros() - time2 > 3000000)
   #endif
   #ifdef HIGHLIFE
   if(micros() - time2 > 30000000)
@@ -205,7 +209,7 @@ void writeFrameBuffer(char TopOrBot)
   {
     for (int col = 0; col < Width; col++)
     {
-      Byte = (fbuffer[col] >> 8);
+      Byte = (fbuffer[col] >> 7); //only 7 bits used, not 8 (2 unused bits at top of word)
       for (long row = 0; row < 7; row++)
       {
         if (Byte & 0x1 == 0x1)
@@ -280,23 +284,23 @@ void writeFrameBuffer(char TopOrBot)
 }
 
 //checks commented out for speed (but doesn't appear to matter much)
-void clearPixel(int x, int y)
+void clearPixel(unsigned int x, unsigned int y)
 {
 //if(x < Width && y < Height)
 //  {
-  if(y > 6) 
-    y++;
+  //if(y > 6) 
+   // y++;
   fbuffer[x] &= ~(1 << y);
 //  }
 }
 
 //enable checks to allow invalid pixels to be chosen (this lets us work to the edge of the board)
-bool getPixel(int x, int y)
+bool getPixel(unsigned int x, unsigned int y)
 {
 if(x < Width && y < Height)
    {
-   if( y > 6) //top bit isn't output (7 rows each half), we have to shift up
-      y++; 
+//   if( y > 6) //top bit isn't output (7 rows each half), we have to shift up
+//      y++; 
    if( (fbuffer[x] & (1<<y)) > 0) 
      return true;
    else 
@@ -305,12 +309,12 @@ if(x < Width && y < Height)
 return false;
 }
 
-void putPixel(int x, int y)
+void putPixel(unsigned int x, unsigned int y)
 {
 //if(x < Width && y < Height)
   //{
-  if(y > 6) //top bit isn't output (7 rows each half), we have to shift up
-     y++;
+  //if(y > 6) //top bit isn't output (7 rows each half), we have to shift up
+  //   y++;
   fbuffer[x] |= (1 << y);
   //}
 }
